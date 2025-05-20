@@ -29,12 +29,20 @@ int main(){
     }
     printf("Sensor connected!\n");
 
-    printf("Waiting for the actor to connect...\n");
-    int actor_socket = accept(server_socket, nullptr, nullptr);
-    while(actor_socket == -1){
-        printf("Connection failed, try again...\n");
-        actor_socket = accept(server_socket, nullptr, nullptr);
+    // printf("Waiting for the actor to connect...\n");
+    // int actor_socket = accept(server_socket, nullptr, nullptr);
+    // while(actor_socket == -1){
+    //     printf("Connection failed, try again...\n");
+    //     actor_socket = accept(server_socket, nullptr, nullptr);
+    // }
+    // printf("Actor connected!\n");
+
+    while(true){
+        char buffer[1024] = {0};
+        if(recv(sensor_socket, buffer, sizeof(buffer), 0) > 0){
+            printf("Sensor message: <%s>\n", buffer);
+        }
     }
-    printf("Actor connected!\n");
+
     return 0;
 }
