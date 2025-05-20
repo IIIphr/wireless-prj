@@ -39,8 +39,13 @@ int main(){
 
     while(true){
         char buffer[1024] = {0};
-        if(recv(sensor_socket, buffer, sizeof(buffer), 0) > 0){
-            printf("Sensor message: <%s>\n", buffer);
+        switch(recv(sensor_socket, buffer, sizeof(buffer), 0)){
+            case -1:{
+                printf("Failed to receive data from sensor.\n");
+                return 3;
+            }
+            case 0: break;
+            default: printf("Sensor message: <%s>\n", buffer);
         }
     }
 
