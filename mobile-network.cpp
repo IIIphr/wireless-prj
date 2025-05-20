@@ -20,6 +20,21 @@ int main(){
         return 2;
     }
     printf("Server is listening on port 8088.\n");
-    
+
+    printf("Waiting for the sensor to connect...\n");
+    int sensor_socket = accept(server_socket, nullptr, nullptr);
+    while(sensor_socket == -1){
+        printf("Connection failed, try again...\n");
+        sensor_socket = accept(server_socket, nullptr, nullptr);
+    }
+    printf("Sensor connected!\n");
+
+    printf("Waiting for the actor to connect...\n");
+    int actor_socket = accept(server_socket, nullptr, nullptr);
+    while(actor_socket == -1){
+        printf("Connection failed, try again...\n");
+        actor_socket = accept(server_socket, nullptr, nullptr);
+    }
+    printf("Actor connected!\n");
     return 0;
 }
