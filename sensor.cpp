@@ -5,8 +5,12 @@
 #include <unistd.h>
 #include <cstdlib>
 #include <ctime>
+#include <cstdlib>
+#include <csignal>
 
 using namespace std;
+
+int client_socket = -1;
 
 void wait_sec(int sec){
     time_t start, now;
@@ -18,7 +22,7 @@ void wait_sec(int sec){
 }
 
 int main(){
-    int client_socket = socket(AF_INET, SOCK_STREAM, 0);
+    client_socket = socket(AF_INET, SOCK_STREAM, 0);
     if(client_socket == -1){
         printf("Couldn't create the client socket.\n");
         return 1;
@@ -33,11 +37,21 @@ int main(){
     }
     printf("Sensor is online.\n");
 
+    auto lam = [] (int i) {
+        char buffer[1024] = {0};
+        buffer[0] = 'q';
+        printf("\nShutting down the network...\n");
+        send(client_socket, buffer, strlen(buffer), 0);
+        exit(0);
+    };
+
+    signal(SIGINT, lam);
+
     srand(time(0));
     while(true){
+        char buffer[1024] = {0};
         int random_number = (rand() % 40) + 15;
         printf("Sending %d...\n", random_number);
-        char buffer[1024] = {0};
         sprintf(buffer, "%d", random_number); 
         send(client_socket, buffer, strlen(buffer), 0);
         wait_sec(2);

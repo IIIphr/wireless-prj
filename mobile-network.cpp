@@ -38,6 +38,10 @@ int main(){
     }
     printf("Sensor connected!\n");
 
+    char buffer[1024] = {0};
+    buffer[0] = '1';
+    send(sensor_socket, buffer, strlen(buffer), 0);
+
     while(true){
         char buffer[1024] = {0};
         switch(recv(sensor_socket, buffer, sizeof(buffer), 0)){
@@ -47,8 +51,15 @@ int main(){
             }
             case 0: break;
             default: {
+                if(buffer[0] == 'q') {
+                    printf("Shutdown message received, shuting down the actor...\n");
+                    send(actor_socket, buffer, strlen(buffer), 0);
+                    return 0;
+                }
                 printf("Sensor message: <%s>\n", buffer);
                 send(actor_socket, buffer, strlen(buffer), 0);
+                buffer[0] = '1';
+                send(sensor_socket, buffer, strlen(buffer), 0);
             }
         }
     }
