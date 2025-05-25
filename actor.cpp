@@ -1,21 +1,8 @@
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <cstring>
-#include <unistd.h>
-#include <cstdlib>
-#include <ctime>
 
 using namespace std;
-
-void wait_sec(int sec){
-    time_t start, now;
-    time(&start);
-    time(&now);
-    while(difftime(now, start) < sec){
-        time(&now);
-    }
-}
 
 int main(){
     int client_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -31,17 +18,19 @@ int main(){
         printf("Couldn't connect to mobile network.\n");
         return 2;
     }
-    printf("Sensor is online.\n");
+    printf("Actor is online.\n");
 
-    srand(time(0));
     while(true){
-        int random_number = (rand() % 40) + 15;
-        printf("Sending %d...\n", random_number);
         char buffer[1024] = {0};
-        sprintf(buffer, "%d", random_number); 
-        send(client_socket, buffer, strlen(buffer), 0);
-        wait_sec(2);
+        switch(recv(client_socket, buffer, sizeof(buffer), 0)){
+            case -1:{
+                printf("Failed to receive data from network.\n");
+                return 3;
+            }
+            case 0: break;
+            default: printf("Network message: <%s>\n", buffer);
+        }
     }
-    close(client_socket);
+
     return 0;
 }

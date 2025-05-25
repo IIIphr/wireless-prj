@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <cstring>
 
 using namespace std;
 
@@ -20,6 +21,14 @@ int main(){
         return 2;
     }
     printf("Server is listening on port 8088.\n");
+    
+    printf("Waiting for the actor to connect...\n");
+    int actor_socket = accept(server_socket, nullptr, nullptr);
+    while(actor_socket == -1){
+        printf("Connection failed, try again...\n");
+        actor_socket = accept(server_socket, nullptr, nullptr);
+    }
+    printf("Actor connected!\n");
 
     printf("Waiting for the sensor to connect...\n");
     int sensor_socket = accept(server_socket, nullptr, nullptr);
@@ -29,14 +38,6 @@ int main(){
     }
     printf("Sensor connected!\n");
 
-    // printf("Waiting for the actor to connect...\n");
-    // int actor_socket = accept(server_socket, nullptr, nullptr);
-    // while(actor_socket == -1){
-    //     printf("Connection failed, try again...\n");
-    //     actor_socket = accept(server_socket, nullptr, nullptr);
-    // }
-    // printf("Actor connected!\n");
-
     while(true){
         char buffer[1024] = {0};
         switch(recv(sensor_socket, buffer, sizeof(buffer), 0)){
@@ -45,7 +46,10 @@ int main(){
                 return 3;
             }
             case 0: break;
-            default: printf("Sensor message: <%s>\n", buffer);
+            default: {
+                printf("Sensor message: <%s>\n", buffer);
+                send(actor_socket, buffer, strlen(buffer), 0);
+            }
         }
     }
 
