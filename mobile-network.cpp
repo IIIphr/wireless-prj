@@ -2,10 +2,16 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <cstring>
+#include <ctime>
+#include <cstdlib>
 
 using namespace std;
 
 int main(){
+    int loss_probability = 0;
+    printf("Enter the loss probability (integer, 0 to 100): ");
+    scanf("%d", &loss_probability);
+
     int server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if(server_socket == -1){
         printf("Couldn't create the server socket.\n");
@@ -42,6 +48,7 @@ int main(){
     buffer[0] = '1';
     send(sensor_socket, buffer, strlen(buffer), 0);
 
+    srand(time(0));
     while(true){
         char buffer[1024] = {0};
         switch(recv(sensor_socket, buffer, sizeof(buffer), 0)){
@@ -57,7 +64,12 @@ int main(){
                     return 0;
                 }
                 printf("Sensor message: <%s>\n", buffer);
-                send(actor_socket, buffer, strlen(buffer), 0);
+                if(rand() % 100 < loss_probability){
+                    printf("The above message was lost.\n");
+                }
+                else{
+                    send(actor_socket, buffer, strlen(buffer), 0);
+                }
                 buffer[0] = '1';
                 send(sensor_socket, buffer, strlen(buffer), 0);
             }

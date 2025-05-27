@@ -7,17 +7,17 @@
 #include <ctime>
 #include <cstdlib>
 #include <csignal>
+#include <chrono>
 
 using namespace std;
 
 int client_socket = -1;
 
-void wait_sec(int sec){
-    time_t start, now;
-    time(&start);
-    time(&now);
-    while(difftime(now, start) < sec){
-        time(&now);
+void wait_ms(int ms){
+    chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
+    chrono::high_resolution_clock::time_point now = chrono::high_resolution_clock::now();
+    while(chrono::duration_cast<std::chrono::milliseconds>(now - start).count() < ms){
+        now = chrono::high_resolution_clock::now();
     }
 }
 
@@ -54,7 +54,7 @@ int main(){
         printf("Sending %d...\n", random_number);
         sprintf(buffer, "%d", random_number); 
         send(client_socket, buffer, strlen(buffer), 0);
-        wait_sec(2);
+        wait_ms(0.001);
     }
     close(client_socket);
     return 0;
