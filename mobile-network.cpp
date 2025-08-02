@@ -50,7 +50,9 @@ int main(){
 
     srand(time(0));
     while(true){
+        printf("#1\n");
         char buffer[1024] = {0};
+        printf("#2\n");
         switch(recv(sensor_socket, buffer, sizeof(buffer), 0)){
             case -1:{
                 printf("Failed to receive data from sensor.\n");
@@ -58,6 +60,7 @@ int main(){
             }
             case 0: break;
             default: {
+                printf("#3\n");
                 if(buffer[0] == 'q') {
                     printf("Shutdown message received, shuting down the actor...\n");
                     send(actor_socket, buffer, strlen(buffer), 0);
@@ -68,10 +71,13 @@ int main(){
                     printf("The above message was lost.\n");
                 }
                 else{
+                    printf("#4\n");
                     send(actor_socket, buffer, strlen(buffer), 0);
                 }
-                buffer[0] = '1';
-                send(sensor_socket, buffer, strlen(buffer), 0);
+                printf("#5\n");
+                // buffer[0] = '1';
+                // send(sensor_socket, buffer, strlen(buffer), 0);
+                printf("#6\n");
             }
         }
     }
