@@ -7,6 +7,7 @@
 using namespace std;
 
 int desired_temp = 25;
+double message_count = 0;
 
 int main(){
     printf("Enter your desired temperature: ");
@@ -32,12 +33,14 @@ int main(){
         switch(recv(client_socket, buffer, sizeof(buffer), 0)){
             case -1:{
                 printf("Failed to receive data from network.\n");
+                printf("Message count: %lf\n", message_count);
                 return 3;
             }
             case 0: break;
             default: {
                 if(buffer[0] == 'q') {
                     printf("Shutdown message received, exiting...\n");
+                    printf("Message count: %lf\n", message_count);
                     return 0;
                 }
                 int current_temp = atoi(buffer);
@@ -50,6 +53,7 @@ int main(){
                 else {
                     printf("Heater and Cooler off (temp: %d)\n", current_temp);
                 }
+                message_count++;
             }
         }
     }

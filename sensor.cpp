@@ -12,6 +12,8 @@
 using namespace std;
 
 int client_socket = -1;
+double message_count = 0;
+int delay = 0;
 
 void wait_ms(int ms){
     chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
@@ -22,6 +24,9 @@ void wait_ms(int ms){
 }
 
 int main(){
+    printf("Enter the delay between temperature reports (integer, milliseconds): ");
+    scanf("%d", &delay);
+
     client_socket = socket(AF_INET, SOCK_STREAM, 0);
     if(client_socket == -1){
         printf("Couldn't create the client socket.\n");
@@ -42,6 +47,7 @@ int main(){
         buffer[0] = 'q';
         printf("\nShutting down the network...\n");
         send(client_socket, buffer, strlen(buffer), 0);
+        printf("Message count: %lf\n", message_count);
         exit(0);
     };
 
@@ -52,10 +58,13 @@ int main(){
         char buffer[1024] = {0};
         int random_number = (rand() % 40) + 15;
         printf("Sending %d...\n", random_number);
-        sprintf(buffer, "%d", random_number); 
+        sprintf(buffer, "%d\n", random_number);
         send(client_socket, buffer, strlen(buffer), 0);
-        wait_ms(0.001);
+        message_count++;
+        if(delay > 0){
+            wait_ms(delay);
+        }
     }
-    close(client_socket);
+
     return 0;
 }

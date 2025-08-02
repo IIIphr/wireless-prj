@@ -6,9 +6,11 @@
 #include <cstdlib>
 
 using namespace std;
+double message_count = 0;
+double loss_count = 0;
+int loss_probability = 0;
 
 int main(){
-    int loss_probability = 0;
     printf("Enter the loss probability (integer, 0 to 100): ");
     scanf("%d", &loss_probability);
 
@@ -44,40 +46,43 @@ int main(){
     }
     printf("Sensor connected!\n");
 
-    char buffer[1024] = {0};
-    buffer[0] = '1';
-    send(sensor_socket, buffer, strlen(buffer), 0);
-
     srand(time(0));
     while(true){
-        printf("#1\n");
         char buffer[1024] = {0};
-        printf("#2\n");
         switch(recv(sensor_socket, buffer, sizeof(buffer), 0)){
             case -1:{
-                printf("Failed to receive data from sensor.\n");
+                printf("Failed to receive data from sensor. Shutting down the actor...\n");
+                send(actor_socket, buffer, strlen(buffer), 0);
+                printf("Message count: %lf\n", message_count);
+                printf("Loss count: %lf\n", loss_count);
+                printf("Total count: %lf\n", loss_count + message_count);
                 return 3;
             }
             case 0: break;
             default: {
-                printf("#3\n");
-                if(buffer[0] == 'q') {
-                    printf("Shutdown message received, shuting down the actor...\n");
-                    send(actor_socket, buffer, strlen(buffer), 0);
-                    return 0;
+                char * input = strtok(buffer, "\n");
+                char output_buffer[1024] = {0};
+                while(input){
+                    if(input[0] == 'q') {
+                        printf("Shutdown message received, shuting down the actor...\n");
+                        send(actor_socket, input, strlen(input), 0);
+                        printf("Message count: %lf\n", message_count);
+                        printf("Loss count: %lf\n", loss_count);
+                        printf("Total count: %lf\n", loss_count + message_count);
+                        return 0;
+                    }
+                    printf("Sensor message: <%s>\n", input);
+                    if(rand() % 100 < loss_probability){
+                        printf("The above message was lost.\n");
+                        loss_count++;
+                    }
+                    else{
+                        sprintf(output_buffer, "%s\n", input);
+                        send(actor_socket, output_buffer, strlen(output_buffer), 0);
+                        message_count++;
+                    }
+                    input = strtok(NULL, "\n");
                 }
-                printf("Sensor message: <%s>\n", buffer);
-                if(rand() % 100 < loss_probability){
-                    printf("The above message was lost.\n");
-                }
-                else{
-                    printf("#4\n");
-                    send(actor_socket, buffer, strlen(buffer), 0);
-                }
-                printf("#5\n");
-                // buffer[0] = '1';
-                // send(sensor_socket, buffer, strlen(buffer), 0);
-                printf("#6\n");
             }
         }
     }
